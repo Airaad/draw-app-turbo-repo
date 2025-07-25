@@ -139,6 +139,27 @@ app.post("/create-room", authMiddleware, async (req, res) => {
   }
 });
 
-app.get("/room-chats", async (req, res) => {});
+app.get("/room-chats/:roomId", authMiddleware, async (req, res) => {
+  const roomId = Number(req.params.roomId);
+  try {
+    const messages = await prismaClient.chat.findMany({
+      where: { roomId },
+      orderBy: { id: "asc" },
+      take: 50,
+    });
+    if (!messages) {
+      return res.json({
+        messages: "No messages found",
+      });
+    }
+    return res.status(201).json({
+      messages,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Something went wrong!",
+    });
+  }
+});
 
 app.listen(port);
