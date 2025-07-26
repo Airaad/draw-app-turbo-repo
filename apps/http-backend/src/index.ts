@@ -139,6 +139,24 @@ app.post("/create-room", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/join-room/:slug", authMiddleware, async (req, res) => {
+  const roomSlug = req.params.slug;
+  try {
+    const isValidSlug = await prismaClient.room.findFirst({
+      where: { slug: roomSlug },
+    });
+    if (!isValidSlug) {
+      return res.json({
+        message: "No such room exists",
+      });
+    }
+    const roomId = isValidSlug.id;
+    return res.status(200).json({
+      roomId,
+    });
+  } catch (error) {}
+});
+
 app.get("/room-chats/:roomId", authMiddleware, async (req, res) => {
   const roomId = Number(req.params.roomId);
   try {
