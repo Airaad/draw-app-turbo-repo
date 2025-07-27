@@ -1,14 +1,22 @@
 "use client";
 import { canvasSetup } from "@/draw";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 function CanvasBoard() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [selectedShape, setSelectedShape] = useState<"rectangle" | "circle">(
+    "circle"
+  );
 
   useEffect(() => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
-      canvasSetup(canvas);
+      const resizeCanvas = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      };
+      resizeCanvas();
+      canvasSetup(canvas, selectedShape);
     }
   }, []);
 
@@ -16,9 +24,7 @@ function CanvasBoard() {
     <div>
       <canvas
         ref={canvasRef}
-        height={1000}
-        width={1000}
-        className="bg-white"
+        className="fixed top-0 left-0 z-0 bg-white"
       ></canvas>
     </div>
   );
