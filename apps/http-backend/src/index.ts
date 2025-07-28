@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { userSchema, siginSchema, roomSchema } from "@repo/common/type";
@@ -9,6 +10,7 @@ import bcrypt from "bcrypt";
 const port = 3001;
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
@@ -25,7 +27,7 @@ app.post("/signup", async (req, res) => {
       where: { username: validatedData.data.username },
     });
     if (isAlreadyUser) {
-      return res.status(402).json({
+      return res.status(409).json({
         message: "User with this username already exists.",
       });
     }
@@ -38,7 +40,6 @@ app.post("/signup", async (req, res) => {
       },
     });
     res.status(201).json({
-      user: newUser,
       message: "User signup successfull",
     });
   } catch (error) {

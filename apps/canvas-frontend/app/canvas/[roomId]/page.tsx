@@ -1,7 +1,10 @@
 import CanvasBoard from "@/components/CanvasBoard";
 import React from "react";
 
-function CanvasPage() {
+async function CanvasPage({ params }: { params: Promise<{ roomId: string }> }) {
+
+  const {roomId} = await params;
+  
   return (
     <div>
       <CanvasBoard />
