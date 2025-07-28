@@ -60,36 +60,75 @@ export default function AuthPage({ mode }: AuthPageProps) {
 
     setIsLoading(true);
 
-    try {
-      const res = await axios.post("http://localhost:3001/signup", {
-        ...formData,
-      });
+    //SignUp handler
+    if (isSignUp) {
+      try {
+        const res = await axios.post("http://localhost:3001/signup", {
+          ...formData,
+        });
 
-      if (res.status === 201) {
-        alert(`${isSignUp ? "Sign up" : "Sign in"} successful!`);
-        setFormData({ name: "", username: "", password: "" });
-        setErrors({});
-        router.push("/signin");
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status;
-        const message = error.response?.data?.message;
-
-        if (status === 403) {
-          alert("Invalid input. Please check the form.");
-        } else if (status === 409) {
-          alert("Username already exists.");
-        } else if (status === 500) {
-          alert("Server error. Please try again later.");
-        } else {
-          alert(message || "Signup failed.");
+        if (res.status === 201) {
+          alert(`${isSignUp ? "Sign up" : "Sign in"} successful!`);
+          setFormData({ name: "", username: "", password: "" });
+          setErrors({});
+          router.push("/signin");
         }
-      } else {
-        alert("Unexpected error. Please try again.");
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const status = error.response?.status;
+          const message = error.response?.data?.message;
+
+          if (status === 403) {
+            alert("Invalid input. Please check the form.");
+          } else if (status === 409) {
+            alert("Username already exists.");
+          } else if (status === 500) {
+            alert("Server error. Please try again later.");
+          } else {
+            alert(message || "Signup failed.");
+          }
+        } else {
+          alert("Unexpected error. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
+    }
+    //SiginIn Handler
+    else {
+      try {
+        const res = await axios.post("http://localhost:3001/signin", {
+          username: formData.username,
+          password: formData.password,
+        });
+
+        if (res.status === 201) {
+          //TODO: add token to the localstorage
+          alert(`${isSignUp ? "Sign up" : "Sign in"} successful!`);
+          setFormData({ name: "", username: "", password: "" });
+          setErrors({});
+          router.push("/canvas/1");
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const status = error.response?.status;
+          const message = error.response?.data?.message;
+
+          if (status === 403) {
+            alert("Invalid input. Please check the form.");
+          } else if (status === 409) {
+            alert(message);
+          } else if (status === 500) {
+            alert("Server error. Please try again later.");
+          } else {
+            alert(message || "Signin failed.");
+          }
+        } else {
+          alert("Unexpected error. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 

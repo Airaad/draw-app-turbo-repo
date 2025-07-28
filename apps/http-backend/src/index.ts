@@ -17,10 +17,9 @@ app.post("/signup", async (req, res) => {
   const validatedData = userSchema.safeParse(req.body);
 
   if (!validatedData.success) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Not valid input",
     });
-    return;
   }
   try {
     const isAlreadyUser = await prismaClient.user.findFirst({
@@ -32,7 +31,7 @@ app.post("/signup", async (req, res) => {
       });
     }
     const hashedPasswrod = await bcrypt.hash(validatedData.data.password, 10);
-    const newUser = await prismaClient.user.create({
+    await prismaClient.user.create({
       data: {
         username: validatedData.data.username,
         password: hashedPasswrod,
@@ -47,29 +46,24 @@ app.post("/signup", async (req, res) => {
       message: "Something went wrong!",
     });
   }
-
-  return res.status(201).json({
-    message: "successfullt registered",
-  });
 });
 
 app.post("/signin", async (req, res) => {
   const validatedData = siginSchema.safeParse(req.body);
 
   if (!validatedData.success) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Not valid input",
     });
-    return;
   }
 
   try {
-    const isUser = await prismaClient.user.findFirst({
+    const isUser = await prismaClient.user.findUnique({
       where: { username: validatedData.data.username },
     });
     if (!isUser) {
-      return res.json({
-        messsage: "No user exists with this username",
+      return res.status(404).json({
+        message: "No user exists with this username",
       });
     }
     const isValidPassword = await bcrypt.compare(
@@ -78,7 +72,7 @@ app.post("/signin", async (req, res) => {
     );
 
     if (!isValidPassword) {
-      res.status(401).json({
+      return res.status(409).json({
         message: "Incorrect credentials!",
       });
     }
