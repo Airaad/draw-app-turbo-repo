@@ -66,7 +66,7 @@ wss.on("connection", (socket, request) => {
     rooms: [],
     socket,
   });
-  
+
   socket.on("message", async (data) => {
     const parsedData = JSON.parse(data as unknown as string);
     //To check does room exists or not
@@ -82,8 +82,6 @@ wss.on("connection", (socket, request) => {
       const user = users.find((x) => x.socket === socket);
       user?.rooms.push(parsedData.roomSlug);
     }
-    console.log(users);
-    
 
     // data: {type: "leave", roomSlug: "chat-room-1"}
     if (parsedData.type === "leave") {

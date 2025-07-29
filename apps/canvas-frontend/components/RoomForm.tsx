@@ -17,11 +17,11 @@ export default function RoomForm({ onJoinRoom, onCreateRoom }: RoomFormProps) {
   const [isLoading, setIsLoading] = useState<"join" | "create" | null>(null);
   const router = useRouter();
 
-  useEffect(()=>{
+  useEffect(() => {
     setToken(localStorage.getItem("token"));
-  },[]);
+  }, []);
 
-  const {socket, loading: wsLoading} = useWebSocket();
+  const { socket, loading: wsLoading } = useWebSocket();
 
   const validateRoomName = (name: string): boolean => {
     if (!name.trim()) {
@@ -68,17 +68,16 @@ export default function RoomForm({ onJoinRoom, onCreateRoom }: RoomFormProps) {
 
       if (res.status === 201) {
         const roomId = res.data.roomId;
-        if(socket && !wsLoading){
+        if (socket && !wsLoading) {
           socket.send(
-        JSON.stringify({
-          type: "join",
-          roomSlug: roomName
-        })
-      );
+            JSON.stringify({
+              type: "join",
+              roomSlug: roomName,
+            })
+          );
+          alert("Joined room successfullt");
+          router.push(`/canvas/${roomId}`);
         }
-        
-        alert("Joined room successfullt");
-        router.push(`/canvas/${roomId}`);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
