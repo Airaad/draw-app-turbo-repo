@@ -100,10 +100,9 @@ app.post("/create-room", authMiddleware, async (req, res) => {
   const validatedData = roomSchema.safeParse(req.body);
 
   if (!validatedData.success) {
-    res.status(403).json({
+    return res.status(403).json({
       message: "Not valid input",
     });
-    return;
   }
   try {
     //@ts-ignore
@@ -113,7 +112,7 @@ app.post("/create-room", authMiddleware, async (req, res) => {
       where: { slug: validatedData.data.name },
     });
     if (isAlreadyRoom) {
-      res.status(201).json({
+      res.status(409).json({
         message: "Room with a same name already exists",
       });
     }
@@ -141,15 +140,19 @@ app.get("/join-room/:slug", authMiddleware, async (req, res) => {
       where: { slug: roomSlug },
     });
     if (!isValidSlug) {
-      return res.json({
+      return res.status(404).json({
         message: "No such room exists",
       });
     }
     const roomId = isValidSlug.id;
-    return res.status(200).json({
+    return res.status(201).json({
       roomId,
     });
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json({
+      message: "Something went wrong!",
+    });
+  }
 });
 
 app.get("/room-chats/:roomId", authMiddleware, async (req, res) => {

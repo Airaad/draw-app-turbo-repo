@@ -11,10 +11,9 @@ export function authMiddleware(
   const decode = jwt.verify(token, JWT_SECRET);
 
   if (!decode) {
-    res.status(401).json({
+    return res.status(401).json({
       message: "unauthorized",
     });
-    return;
   }
 
   //@ts-ignore

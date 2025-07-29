@@ -103,11 +103,11 @@ export default function AuthPage({ mode }: AuthPageProps) {
         });
 
         if (res.status === 201) {
-          //TODO: add token to the localstorage
+          localStorage.setItem("token", res.data.token);
           alert(`${isSignUp ? "Sign up" : "Sign in"} successful!`);
           setFormData({ name: "", username: "", password: "" });
           setErrors({});
-          router.push("/canvas/1");
+          router.push("/join-room");
         }
       } catch (error) {
         if (axios.isAxiosError(error)) {
