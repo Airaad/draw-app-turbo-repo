@@ -45,7 +45,7 @@ async function isValidRoom(slug: string): Promise<number | null> {
 const users: User[] = [];
 
 wss.on("connection", (socket, request) => {
-  const url = request.url; // ws://localhost:3000?token=123123
+  const url = request.url; // ws://localhost:8080?token=123123
   if (!url) {
     return;
   }
@@ -66,7 +66,7 @@ wss.on("connection", (socket, request) => {
     rooms: [],
     socket,
   });
-
+  
   socket.on("message", async (data) => {
     const parsedData = JSON.parse(data as unknown as string);
     //To check does room exists or not
@@ -82,6 +82,8 @@ wss.on("connection", (socket, request) => {
       const user = users.find((x) => x.socket === socket);
       user?.rooms.push(parsedData.roomSlug);
     }
+    console.log(users);
+    
 
     // data: {type: "leave", roomSlug: "chat-room-1"}
     if (parsedData.type === "leave") {

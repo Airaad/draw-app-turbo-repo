@@ -1,8 +1,9 @@
 "use client";
 
+import { useWebSocket } from "@/hooks/useWebsocket";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 
 interface RoomFormProps {
   onJoinRoom?: (roomName: string) => void;
@@ -10,10 +11,18 @@ interface RoomFormProps {
 }
 
 export default function RoomForm({ onJoinRoom, onCreateRoom }: RoomFormProps) {
+  const [token, setToken] = useState<string | null>(null);
   const [roomName, setRoomName] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState<"join" | "create" | null>(null);
   const router = useRouter();
+
+  useEffect(()=>{
+    setToken(localStorage.getItem("token"));
+  },[]);
+
+  const {socket, loading: wsLoading} = useWebSocket();
+
   const validateRoomName = (name: string): boolean => {
     if (!name.trim()) {
       setError("Room name is required");
@@ -45,7 +54,6 @@ export default function RoomForm({ onJoinRoom, onCreateRoom }: RoomFormProps) {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         return alert("Not authorized. Please Signin first !");
       }
@@ -60,6 +68,15 @@ export default function RoomForm({ onJoinRoom, onCreateRoom }: RoomFormProps) {
 
       if (res.status === 201) {
         const roomId = res.data.roomId;
+        if(socket && !wsLoading){
+          socket.send(
+        JSON.stringify({
+          type: "join",
+          roomSlug: roomName
+        })
+      );
+        }
+        
         alert("Joined room successfullt");
         router.push(`/canvas/${roomId}`);
       }
@@ -83,7 +100,6 @@ export default function RoomForm({ onJoinRoom, onCreateRoom }: RoomFormProps) {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         return alert("Not authorized. Please Signin first !");
       }
