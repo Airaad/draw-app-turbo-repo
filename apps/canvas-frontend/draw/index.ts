@@ -17,10 +17,16 @@ type Shape =
 
 export function canvasSetup(
   canvas: HTMLCanvasElement,
-  shape: "rectangle" | "circle"
+  shape: "rectangle" | "circle",
+  storedDrawings: any,
+  socket: WebSocket,
+  roomId: string,
+  roomName: string
 ) {
+  console.log("hi there here are the stored drawing", storedDrawings);
+
   const ctx = canvas.getContext("2d");
-  let existingDrawings: Shape[] = [];
+  let existingDrawings: Shape[] = [...storedDrawings];
   if (!ctx) {
     return;
   }
@@ -58,6 +64,19 @@ export function canvasSetup(
     const height = e.clientY - startY;
     const radius = Math.sqrt(width * width + height * height);
     if (shape === "rectangle") {
+      socket.send(
+        JSON.stringify({
+          type: "chat",
+          roomSlug: roomName,
+          message: {
+            type: "rectangle",
+            xCoordinate: startX,
+            yCoordinate: startY,
+            width: width,
+            height: height,
+          },
+        })
+      );
       existingDrawings.push({
         type: "rectangle",
         xCoordinate: startX,
@@ -66,6 +85,20 @@ export function canvasSetup(
         height: height,
       });
     } else if (shape === "circle") {
+      socket.send(
+        JSON.stringify({
+          type: "chat",
+          roomSlug: roomName,
+          message: {
+            type: "circle",
+            xCoordinate: startX,
+            yCoordinate: startY,
+            radius: radius,
+            startAngle: 0,
+            endAngle: 2 * Math.PI,
+          },
+        })
+      );
       existingDrawings.push({
         type: "circle",
         xCoordinate: startX,
@@ -79,14 +112,14 @@ export function canvasSetup(
 }
 
 function showExistingDrawings(
-  existingDrawings: Shape[],
+  existingDrawings: any,
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   shape: "rectangle" | "circle"
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  existingDrawings.forEach((drawing) => {
+  existingDrawings.forEach((drawing: any) => {
     ctx.beginPath();
 
     if (drawing.type === "rectangle") {

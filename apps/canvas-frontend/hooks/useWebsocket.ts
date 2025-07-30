@@ -8,7 +8,6 @@ export function useWebSocket() {
     const token = localStorage.getItem("token");
     if (token) {
       const ws = new WebSocket(`http://localhost:8080?token=${token}`);
-      console.log(token);
       ws.onopen = () => {
         setLoading(false);
         setSocket(ws);

@@ -67,6 +67,9 @@ wss.on("connection", (socket, request) => {
     socket,
   });
 
+  console.log("Number of users",users.length);
+  
+
   socket.on("message", async (data) => {
     const parsedData = JSON.parse(data as unknown as string);
     //To check does room exists or not
@@ -92,22 +95,22 @@ wss.on("connection", (socket, request) => {
       user.rooms = user?.rooms.filter((x) => x !== parsedData.roomSlug);
     }
 
-    // data: {type: "chat", roomId: "chat-room-1",  messsage: "Hi there"}
+    // data: {type: "chat", roomSlug: "chat-room-1",  messsage: "Hi there"}
     if (parsedData.type === "chat") {
       const roomSlug = parsedData.roomSlug;
       const message = parsedData.message;
 
       //To check is user subscribed to the room or not.
-      const user = users.find((x) => x.socket === socket);
-      if (!user?.rooms.includes(roomSlug)) {
-        socket.send("Join the room first to send the message");
-        return;
-      }
+      // const user = users.find((x) => x.socket === socket);
+      // if (!user?.rooms.includes(roomSlug)) {
+      //   socket.send("Join the room first to send the message");
+      //   return;
+      // }
 
       // DatabaseCall to store the messages
       await prismaClient.chat.create({
         data: {
-          message: message,
+          message: JSON.stringify(message),
           userId: userId,
           roomId: roomId,
         },

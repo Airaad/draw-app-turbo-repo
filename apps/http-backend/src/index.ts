@@ -158,21 +158,24 @@ app.get("/join-room/:slug", authMiddleware, async (req, res) => {
 app.get("/room-chats/:roomId", authMiddleware, async (req, res) => {
   const roomId = Number(req.params.roomId);
   try {
-    const messages = await prismaClient.chat.findMany({
+    const data = await prismaClient.chat.findMany({
       where: { roomId },
       orderBy: { id: "asc" },
       take: 50,
+      select: {
+        message: true,
+      },
     });
-    if (!messages) {
+    if (!data) {
       return res.json({
         messages: "No messages found",
       });
     }
     return res.status(201).json({
-      messages,
+      data,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(501).json({
       message: "Something went wrong!",
     });
   }

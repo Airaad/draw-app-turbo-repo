@@ -75,8 +75,10 @@ export default function RoomForm({ onJoinRoom, onCreateRoom }: RoomFormProps) {
               roomSlug: roomName,
             })
           );
+          router.push(
+            `/canvas/${roomId}?roomName=${encodeURIComponent(roomName)}`
+          );
           alert("Joined room successfullt");
-          router.push(`/canvas/${roomId}`);
         }
       }
     } catch (error) {

@@ -1,24 +1,71 @@
 "use client";
 import { canvasSetup } from "@/draw";
+import { useWebSocket } from "@/hooks/useWebsocket";
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 
-function CanvasBoard() {
+function CanvasBoard({
+  roomId,
+  roomName,
+}: {
+  roomId: string;
+  roomName: string;
+}) {
+  const [roomDrawings, setRoomDrawings] = useState<any>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedShape, setSelectedShape] = useState<"rectangle" | "circle">(
-    "circle"
+    "rectangle"
   );
+  const { socket, loading: wsLoading } = useWebSocket();
 
   useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
-      const resizeCanvas = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      };
-      resizeCanvas();
-      canvasSetup(canvas, selectedShape);
-    }
-  }, []);
+    const fetchDrawings = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:3001/room-chats/${roomId}`,
+          {
+            headers: {
+              Authorization: `${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (res.status === 201) {
+          const storedDrawings = res.data.data
+            .map((item: any) => {
+              try {
+                return JSON.parse(item.message);
+              } catch (err) {
+                console.error("Invalid JSON in message:", item.message);
+                return null;
+              }
+            })
+            .filter(Boolean);
+
+          setRoomDrawings(storedDrawings);
+        } else {
+          setRoomDrawings([]);
+        }
+      } catch (error) {
+        console.log("This is the catch error", error);
+        alert("Something went wrong !");
+        setRoomDrawings([]);
+      }
+    };
+    fetchDrawings();
+  }, [roomId]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !roomDrawings || !socket || wsLoading) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+    canvasSetup(canvas, selectedShape, roomDrawings, socket, roomId, roomName);
+  }, [roomDrawings, socket, wsLoading, selectedShape, roomId, roomName]);
 
   return (
     <div>
