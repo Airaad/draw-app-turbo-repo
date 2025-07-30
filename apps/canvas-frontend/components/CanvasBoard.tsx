@@ -64,7 +64,17 @@ function CanvasBoard({
     };
 
     resizeCanvas();
-    canvasSetup(canvas, selectedShape, roomDrawings, socket, roomId, roomName);
+    const cleanup = canvasSetup(
+      canvas,
+      selectedShape,
+      roomDrawings,
+      socket,
+      roomId,
+      roomName
+    );
+    return () => {
+      if (cleanup) cleanup();
+    };
   }, [roomDrawings, socket, wsLoading, selectedShape, roomId, roomName]);
 
   return (

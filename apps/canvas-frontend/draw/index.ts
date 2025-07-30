@@ -1,30 +1,13 @@
-type Shape =
-  | {
-      type: "rectangle";
-      xCoordinate: number;
-      yCoordinate: number;
-      height: number;
-      width: number;
-    }
-  | {
-      type: "circle";
-      xCoordinate: number;
-      yCoordinate: number;
-      radius: number;
-      startAngle: number;
-      endAngle: number;
-    };
+import { Shape } from "@/types/interface";
 
 export function canvasSetup(
   canvas: HTMLCanvasElement,
   shape: "rectangle" | "circle",
-  storedDrawings: any,
+  storedDrawings: Shape[],
   socket: WebSocket,
   roomId: string,
   roomName: string
 ) {
-  console.log("hi there here are the stored drawing", storedDrawings);
-
   const ctx = canvas.getContext("2d");
   let existingDrawings: Shape[] = [...storedDrawings];
   if (!ctx) {
@@ -36,18 +19,18 @@ export function canvasSetup(
   let startX: number;
   let startY: number;
 
-  canvas.addEventListener("mousedown", (e) => {
+  const handleMouseDown = (e: MouseEvent) => {
     clicked = true;
-    startX = e.clientX;
-    startY = e.clientY;
-  });
+    startX = e.offsetX;
+    startY = e.offsetY;
+  };
 
-  canvas.addEventListener("mousemove", (e) => {
+  const handleMouseMove = (e: MouseEvent) => {
     if (clicked) {
-      const width = e.clientX - startX;
-      const height = e.clientY - startY;
+      const width = e.offsetX - startX;
+      const height = e.offsetY - startY;
       const radius = Math.sqrt(width * width + height * height);
-      showExistingDrawings(existingDrawings, canvas, ctx, shape);
+      showExistingDrawings(existingDrawings, canvas, ctx);
       if (shape === "rectangle") {
         ctx.strokeRect(startX, startY, width, height);
       } else if (shape === "circle") {
@@ -56,12 +39,12 @@ export function canvasSetup(
         ctx.stroke();
       }
     }
-  });
+  };
 
-  canvas.addEventListener("mouseup", (e) => {
+  const handleMouseUp = (e: MouseEvent) => {
     clicked = false;
-    const width = e.clientX - startX;
-    const height = e.clientY - startY;
+    const width = e.offsetX - startX;
+    const height = e.offsetY - startY;
     const radius = Math.sqrt(width * width + height * height);
     if (shape === "rectangle") {
       socket.send(
@@ -108,14 +91,25 @@ export function canvasSetup(
         endAngle: 2 * Math.PI,
       });
     }
-  });
+  };
+
+  canvas.addEventListener("mousedown", handleMouseDown);
+  canvas.addEventListener("mousemove", handleMouseMove);
+  canvas.addEventListener("mouseup", handleMouseUp);
+
+  showExistingDrawings(existingDrawings, canvas, ctx);
+
+  return () => {
+    canvas.removeEventListener("mousedown", handleMouseDown);
+    canvas.removeEventListener("mousemove", handleMouseMove);
+    canvas.removeEventListener("mouseup", handleMouseUp);
+  };
 }
 
 function showExistingDrawings(
   existingDrawings: any,
   canvas: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
-  shape: "rectangle" | "circle"
+  ctx: CanvasRenderingContext2D
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
