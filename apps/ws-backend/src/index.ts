@@ -76,7 +76,6 @@ wss.on("connection", (socket, request) => {
     const roomId = await isValidRoom(parsedData.roomSlug);
 
     if (!roomId) {
-      socket.send("This room does not exists");
       return;
     }
 
@@ -103,7 +102,6 @@ wss.on("connection", (socket, request) => {
       //To check is user subscribed to the room or not.
       // const user = users.find((x) => x.socket === socket);
       // if (!user?.rooms.includes(roomSlug)) {
-      //   socket.send("Join the room first to send the message");
       //   return;
       // }
 

@@ -1,6 +1,7 @@
 "use client";
 import { canvasSetup } from "@/draw";
 import { useWebSocket } from "@/hooks/useWebsocket";
+import { Shape } from "@/types/interface";
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -11,13 +12,14 @@ function CanvasBoard({
   roomId: string;
   roomName: string;
 }) {
-  const [roomDrawings, setRoomDrawings] = useState<any>([]);
+  const [roomDrawings, setRoomDrawings] = useState<Shape[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedShape, setSelectedShape] = useState<"rectangle" | "circle">(
     "rectangle"
   );
   const { socket, loading: wsLoading } = useWebSocket();
 
+  //Fetching the existing drawings from the database
   useEffect(() => {
     const fetchDrawings = async () => {
       try {
@@ -46,7 +48,7 @@ function CanvasBoard({
           setRoomDrawings([]);
         }
       } catch (error) {
-        console.log("This is the catch error", error);
+        console.log(error);
         alert("Something went wrong !");
         setRoomDrawings([]);
       }
@@ -69,13 +71,18 @@ function CanvasBoard({
       selectedShape,
       roomDrawings,
       socket,
-      roomId,
       roomName
     );
     return () => {
       if (cleanup) cleanup();
     };
   }, [roomDrawings, socket, wsLoading, selectedShape, roomId, roomName]);
+
+  if(!socket && wsLoading){
+    return(
+      <div><h1>Connecting to the socket...</h1></div>
+    )
+  }
 
   return (
     <div>

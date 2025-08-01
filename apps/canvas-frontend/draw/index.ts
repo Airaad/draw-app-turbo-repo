@@ -5,7 +5,6 @@ export function canvasSetup(
   shape: "rectangle" | "circle",
   storedDrawings: Shape[],
   socket: WebSocket,
-  roomId: string,
   roomName: string
 ) {
   const ctx = canvas.getContext("2d");
@@ -13,8 +12,16 @@ export function canvasSetup(
   if (!ctx) {
     return;
   }
+
+  socket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    console.log("this is coming from the ws server", message.message.type);
+    existingDrawings.push(message.message);
+    showExistingDrawings(existingDrawings, canvas, ctx);
+    console.log(existingDrawings);
+  };
   ctx.strokeStyle = "black";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 1;
   let clicked = false;
   let startX: number;
   let startY: number;
@@ -113,7 +120,7 @@ function showExistingDrawings(
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  existingDrawings.forEach((drawing: any) => {
+  existingDrawings.forEach((drawing: Shape) => {
     ctx.beginPath();
 
     if (drawing.type === "rectangle") {
